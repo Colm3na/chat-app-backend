@@ -22,15 +22,17 @@ module.exports = {
                 let email = user.email;
 
                 User.findOne({username}, (err, userFound) => {
-                    console.log(userFound)
                     if ( userFound !== null ) {
-                        console.log('an user with the same username already exists!');
+                        res
+                        .status(HttpStatus.CONFLICT)
+                        .json({ message: 'an user with the same username already exists!', userFound })
                         return;
                     } else {
                         User.findOne({email}, (err, userFound) => {
-                            console.log(userFound)
                             if ( userFound !== null ) {
-                                console.log('an user with the same e-mail already exists!');
+                                res
+                                        .status(HttpStatus.CONFLICT)
+                                        .json({ message: 'an user with the same e-mail already exists!', userFound })
                                 return;
                             }
                             // Create user in DB
@@ -39,8 +41,10 @@ module.exports = {
                                     const token = jwt.sign(user, dbConfig.secret, {
                                         expiresIn: 120
                                     });
-                                    console.log(token);
-                                    console.log('user succesfully registered!');
+
+                                    res
+                                        .status(HttpStatus.CREATED)
+                                        .json({ message: 'user successfully created', user, token })
                                 }
                             }) 
                         })
