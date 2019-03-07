@@ -36,8 +36,8 @@ module.exports = {
                                 return;
                             }
                             // Create user in DB
-                            User.create(user, (err) => {
-                                if (!err) {
+                            User.create(user)
+                                .then( user => {
                                     const token = jwt.sign(user, dbConfig.secret, {
                                         expiresIn: 120
                                     });
@@ -45,8 +45,12 @@ module.exports = {
                                     res
                                         .status(HttpStatus.CREATED)
                                         .json({ message: 'user successfully created', user, token })
-                                }
-                            }) 
+                                })
+                                .catch(err => {
+                                    res
+                                        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                        .json({message: 'an error occured while saving user to DB', err})
+                                }) 
                         })
                     }
                 })
