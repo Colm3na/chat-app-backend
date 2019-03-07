@@ -9,6 +9,7 @@
   "author": "anagutjor",
   "license": "ISC",
   "dependencies": {
+    "bcrypt": "^3.0.4",
     "cookie-parser": "^1.4.4",
     "dotenv": "^6.2.0",
     "express": "^4.16.4",

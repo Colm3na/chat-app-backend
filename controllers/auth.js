@@ -1,6 +1,7 @@
 const User = require('../schemas');
 const Joi = require('joi');
 const HttpStatus = require('http-status-codes');
+const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const dbConfig = require('../config/secrets');
 
@@ -35,22 +36,31 @@ module.exports = {
                                         .json({ message: 'an user with the same e-mail already exists!', userFound })
                                 return;
                             }
-                            // Create user in DB
-                            User.create(user)
-                                .then( user => {
-                                    const token = jwt.sign({data: user}, dbConfig.secret, {
-                                        expiresIn: 120
-                                    });
-                                    res.cookie('auth', token);
-                                    res
-                                        .status(HttpStatus.CREATED)
-                                        .json({ message: 'user successfully created', user, token })
-                                })
-                                .catch(err => {
-                                    res
-                                        .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                                        .json({message: 'an error occured while saving user to DB', err})
-                                }) 
+                            
+                            //Hash user's password to store it safely
+                            let password = user.password;
+
+                            bcrypt.hash(password, 10, (err, hash) => {
+                                password = hash;
+                                user.password = password;
+
+                                // Create user in DB
+                                User.create(user)
+                                    .then( user => {
+                                        const token = jwt.sign({data: user}, dbConfig.secret, {
+                                            expiresIn: 120
+                                        });
+                                        res.cookie('auth', token);
+                                        res
+                                            .status(HttpStatus.CREATED)
+                                            .json({ message: 'user successfully created', user, token })
+                                    })
+                                    .catch(err => {
+                                        res
+                                            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                            .json({message: 'an error occured while saving user to DB', err})
+                                    })
+                            }) 
                         })
                     }
                 })
