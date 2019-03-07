@@ -5,6 +5,8 @@ const cookieParser = require('cookie-parser');
 const cookieSecret = process.env.COOKIE_SECRET;
 const app = express();
 
+app.use(express.json());
+app.use(express.urlencoded({extended: true}));
 app.use(cookieParser(cookieSecret));
 app.use(express.static(__dirname + 'public'))
 app.use('/api/chatapp', router);
