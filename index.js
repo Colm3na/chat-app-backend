@@ -7,12 +7,7 @@ const app = express();
 
 app.use(cookieParser(cookieSecret));
 app.use(express.static(__dirname + 'public'))
-app.use('/users', router);
-
-app.get('/', function (req, res) {
-  // Cookies that have not been signed
-  console.log('Cookies: ', req.cookies)
-})
+app.use('/api/chatapp', router);
 
 app.listen(3000, () => {
     console.log('Server listening on port 3000');
