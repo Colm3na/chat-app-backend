@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
+const dbConfig = require('./config/secrets');
 
-mongoose.connect('mongodb://localhost:27017/chatapp', { useNewUrlParser: true } );
+mongoose.connect(dbConfig.url, { useNewUrlParser: true } );
 
 const Schema = mongoose.Schema;
 
