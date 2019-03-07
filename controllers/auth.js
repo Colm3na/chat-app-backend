@@ -1,6 +1,8 @@
 const User = require('../schemas');
 const Joi = require('joi');
 const HttpStatus = require('http-status-codes');
+const jwt = require('jsonwebtoken');
+const dbConfig = require('../config/secrets');
 
 const UserValidator = Joi.object().keys({
     username: Joi.string().alphanum().min(3).max(30).required(),
@@ -14,7 +16,7 @@ module.exports = {
         console.log(user);
         Joi.validate( user, UserValidator, (err) => {
             if (!err) {
-                
+
                 //Check if an user with the same username or e-mail already exists
                 let username = user.username;
                 let email = user.email;
@@ -31,8 +33,13 @@ module.exports = {
                                 console.log('an user with the same e-mail already exists!');
                                 return;
                             }
+                            // Create user in DB
                             User.create(user, (err) => {
                                 if (!err) {
+                                    const token = jwt.sign(user, dbConfig.secret, {
+                                        expiresIn: 120
+                                    });
+                                    console.log(token);
                                     console.log('user succesfully registered!');
                                 }
                             }) 
