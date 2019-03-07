@@ -38,7 +38,7 @@ module.exports = {
                             // Create user in DB
                             User.create(user)
                                 .then( user => {
-                                    const token = jwt.sign(user, dbConfig.secret, {
+                                    const token = jwt.sign({data: user}, dbConfig.secret, {
                                         expiresIn: 120
                                     });
 
