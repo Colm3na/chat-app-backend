@@ -11,6 +11,11 @@ const UserValidator = Joi.object().keys({
     password: Joi.string().min(4).required()
 })
 
+const UserLoginValidator = Joi.object().keys({
+    username: Joi.string().alphanum().min(3).max(30).required(),
+    password: Joi.string().min(4).required()
+})
+
 module.exports = {
     createUser(req, res) {
         let user = req.body;
@@ -73,11 +78,11 @@ module.exports = {
     validateUser(req, res) {
         let user = req.body;
         console.log(user);
-        Joi.validate( user, UserValidator, (err) => {
+        Joi.validate( user, UserLoginValidator, (err) => {
             if (!err) {
 
                 let username = user.username;
-                let email = user.email;
+                // let email = user.email;
 
                 User.findOne({username}, (err, userFound) => {
                     if ( userFound === null ) {
@@ -86,28 +91,25 @@ module.exports = {
                             .json({ message: 'wrong username', userFound })
                         return;
                     } else {
-                        User.findOne({email}, (err, userFound) => {
-                            if ( userFound === null ) {
+
+                        let password = user.password;
+
+                        bcrypt.compare(password, userFound.password, (err, correct) => {
+
+                            if ( correct === true ) {
+                                user.password = userFound.password;
+                                const token = jwt.sign({data: user}, dbConfig.secret, {
+                                    expiresIn: 120
+                                });
+                                res
+                                    .cookie('auth', token)
+                                    .status(HttpStatus.OK)
+                                    .json({message: 'user successfully logged in', user, token})
+                            } else {
                                 res
                                     .status(HttpStatus.CONFLICT)
-                                    .json({ message: 'wrong e-mail', userFound })
-                                return;
+                                    .json({message: 'invalid password', user})
                             }
-
-                            let password = user.password;
-
-                            bcrypt.compare(password, userFound.password, (err, correct) => {
-
-                                if ( correct === true ) {
-                                    res
-                                        .status(HttpStatus.OK)
-                                        .json({message: 'user successfully logged in', user})
-                                } else {
-                                    res
-                                        .status(HttpStatus.CONFLICT)
-                                        .json({message: 'invalid password', user})
-                                }
-                            })
                         })
                     }
                 })
