@@ -96,12 +96,9 @@ module.exports = {
 
                             let password = user.password;
 
-                            bcrypt.hash(password, 10, (err, hash) => {
-                                password = hash;
-                                console.log(password);
-                                console.log(userFound.password)
+                            bcrypt.compare(password, userFound.password, (err, correct) => {
 
-                                if ( userFound.password === password ) {
+                                if ( correct === true ) {
                                     res
                                         .status(HttpStatus.OK)
                                         .json({message: 'user successfully logged in', user})
