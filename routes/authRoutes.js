@@ -5,6 +5,8 @@ const AuthControl = require('../controllers/auth');
 
 router.post('/register', AuthControl.createUser);
 
+router.post('/login', AuthControl.validateUser);
+
 router.get('/users', function(req, res) {
     User.find({}, (err, users) => {
         if ( users.length === 0 ) {

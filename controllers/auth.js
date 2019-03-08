@@ -64,10 +64,58 @@ module.exports = {
                         })
                     }
                 })
-            } else if (err && err.details) {
-                return res.status(HttpStatus.BAD_REQUEST).json({ message: err.details });
             } else {
-                console.error(err);
+                return res.status(HttpStatus.BAD_REQUEST).json({ message: err.details });
+            }
+        })
+    },
+
+    validateUser(req, res) {
+        let user = req.body;
+        console.log(user);
+        Joi.validate( user, UserValidator, (err) => {
+            if (!err) {
+
+                let username = user.username;
+                let email = user.email;
+
+                User.findOne({username}, (err, userFound) => {
+                    if ( userFound === null ) {
+                        res
+                            .status(HttpStatus.CONFLICT)
+                            .json({ message: 'wrong username', userFound })
+                        return;
+                    } else {
+                        User.findOne({email}, (err, userFound) => {
+                            if ( userFound === null ) {
+                                res
+                                    .status(HttpStatus.CONFLICT)
+                                    .json({ message: 'wrong e-mail', userFound })
+                                return;
+                            }
+
+                            let password = user.password;
+
+                            bcrypt.hash(password, 10, (err, hash) => {
+                                password = hash;
+                                console.log(password);
+                                console.log(userFound.password)
+
+                                if ( userFound.password === password ) {
+                                    res
+                                        .status(HttpStatus.OK)
+                                        .json({message: 'user successfully logged in', user})
+                                } else {
+                                    res
+                                        .status(HttpStatus.CONFLICT)
+                                        .json({message: 'invalid password', user})
+                                }
+                            })
+                        })
+                    }
+                })
+            } else {
+                return res.status(HttpStatus.BAD_REQUEST).json({ message: err.details });
             }
         })
     }
