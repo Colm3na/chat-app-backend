@@ -53,7 +53,7 @@ module.exports = {
                                 User.create(user)
                                     .then( user => {
                                         const token = jwt.sign({data: user}, dbConfig.secret, {
-                                            expiresIn: 120
+                                            expiresIn: '5h'
                                         });
                                         res.cookie('auth', token);
                                         res
@@ -99,7 +99,7 @@ module.exports = {
                             if ( correct === true ) {
                                 user.password = userFound.password;
                                 const token = jwt.sign({data: user}, dbConfig.secret, {
-                                    expiresIn: 120
+                                    expiresIn: '5h'
                                 });
                                 res
                                     .cookie('auth', token)
