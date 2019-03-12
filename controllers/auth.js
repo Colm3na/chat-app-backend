@@ -11,8 +11,13 @@ const UserValidator = Joi.object().keys({
     password: Joi.string().min(4).required()
 })
 
-const UserLoginValidator = Joi.object().keys({
+const UserLoginUsernameValidator = Joi.object().keys({
     username: Joi.string().alphanum().min(3).max(30).required(),
+    password: Joi.string().min(4).required()
+})
+
+const UserLoginEmailValidator = Joi.object().keys({
+    email: Joi.string().email({ minDomainAtoms: 2 }).required(),
     password: Joi.string().min(4).required()
 })
 
@@ -78,44 +83,84 @@ module.exports = {
     validateUser(req, res) {
         let user = req.body;
         console.log(user);
-        Joi.validate( user, UserLoginValidator, (err) => {
-            if (!err) {
+        if (user.username) {
+            Joi.validate( user, UserLoginUsernameValidator, (err) => {
+                if (!err) {
 
-                let username = user.username;
-                // let email = user.email;
+                    let username = user.username;
 
-                User.findOne({username}, (err, userFound) => {
-                    if ( userFound === null ) {
-                        res
-                            .status(HttpStatus.CONFLICT)
-                            .json({ message: 'wrong username', userFound })
-                        return;
-                    } else {
+                    User.findOne({username}, (err, userFound) => {
+                        if ( userFound === null ) {
+                            res
+                                .status(HttpStatus.CONFLICT)
+                                .json({ message: 'wrong username', userFound })
+                            return;
+                        } else {
 
-                        let password = user.password;
+                            let password = user.password;
 
-                        bcrypt.compare(password, userFound.password, (err, correct) => {
+                            bcrypt.compare(password, userFound.password, (err, correct) => {
 
-                            if ( correct === true ) {
-                                user.password = userFound.password;
-                                const token = jwt.sign({data: user}, dbConfig.secret, {
-                                    expiresIn: '5h'
-                                });
-                                res
-                                    .cookie('auth', token)
-                                    .status(HttpStatus.OK)
-                                    .json({message: 'user successfully logged in', user, token})
-                            } else {
-                                res
-                                    .status(HttpStatus.CONFLICT)
-                                    .json({message: 'invalid password', user})
-                            }
-                        })
-                    }
-                })
-            } else {
-                return res.status(HttpStatus.BAD_REQUEST).json({ message: err.details });
-            }
-        })
+                                if ( correct === true ) {
+                                    user.password = userFound.password;
+                                    const token = jwt.sign({data: user}, dbConfig.secret, {
+                                        expiresIn: '5h'
+                                    });
+                                    res
+                                        .cookie('auth', token)
+                                        .status(HttpStatus.OK)
+                                        .json({message: 'user successfully logged in', user, token})
+                                } else {
+                                    res
+                                        .status(HttpStatus.CONFLICT)
+                                        .json({message: 'invalid password', user})
+                                }
+                            })
+                        }
+                    })
+                } else {
+                    return res.status(HttpStatus.BAD_REQUEST).json({ message: err.details });
+                }
+            })
+        } else {
+            Joi.validate( user, UserLoginEmailValidator, (err) => {
+                if (!err) {
+
+                    let email = user.email;
+
+                    User.findOne({email}, (err, userFound) => {
+                        if ( userFound === null ) {
+                            res
+                                .status(HttpStatus.CONFLICT)
+                                .json({ message: 'wrong email', userFound })
+                            return;
+                        } else {
+
+                            let password = user.password;
+
+                            bcrypt.compare(password, userFound.password, (err, correct) => {
+
+                                if ( correct === true ) {
+                                    user.password = userFound.password;
+                                    const token = jwt.sign({data: user}, dbConfig.secret, {
+                                        expiresIn: '5h'
+                                    });
+                                    res
+                                        .cookie('auth', token)
+                                        .status(HttpStatus.OK)
+                                        .json({message: 'user successfully logged in', user, token})
+                                } else {
+                                    res
+                                        .status(HttpStatus.CONFLICT)
+                                        .json({message: 'invalid password', user})
+                                }
+                            })
+                        }
+                    })
+                } else {
+                    return res.status(HttpStatus.BAD_REQUEST).json({ message: err.details });
+                }
+            })
+        }
     }
 };
