@@ -89,6 +89,7 @@ module.exports = {
 
                     let username = user.username;
 
+                    // Look for the user in the DB
                     User.findOne({username}, (err, userFound) => {
                         if ( userFound === null ) {
                             res
@@ -99,6 +100,7 @@ module.exports = {
 
                             let password = user.password;
 
+                            // Compare login password and the one stored in the DB
                             bcrypt.compare(password, userFound.password, (err, correct) => {
 
                                 if ( correct === true ) {
@@ -128,6 +130,7 @@ module.exports = {
 
                     let email = user.email;
 
+                    // Look for the user in the DB
                     User.findOne({email}, (err, userFound) => {
                         if ( userFound === null ) {
                             res
@@ -138,6 +141,7 @@ module.exports = {
 
                             let password = user.password;
 
+                            // Compare login password and the one stored in the DB
                             bcrypt.compare(password, userFound.password, (err, correct) => {
 
                                 if ( correct === true ) {
