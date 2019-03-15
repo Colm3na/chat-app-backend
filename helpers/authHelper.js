@@ -1,11 +1,16 @@
 const jwt = require('jsonwebtoken');
-const httpStatus = require('http-status-codes');
+const HttpStatus = require('http-status-codes');
 
 const dbConfig = require('../config/secrets');
 
 module.exports = {
   verifyToken: (req, res, next) => {
-    const token = req.cookies.auth;
+    if (!req.headers.authorization) {
+      return res
+        .status(HttpStatus.UNAUTHORIZED)
+        .json({message: 'No Authorization'});
+    }
+    const token = req.cookies.auth || req.headers.authorization.split(' ')[1];
 
     if (!token) {
       return res
