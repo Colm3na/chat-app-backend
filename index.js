@@ -23,7 +23,7 @@ app.use(function(req, res, next) {
   });
 app.use(express.static(__dirname + 'public'))
 
-app.use('api/chatapp', users);
+app.use('/api/chatapp', users);
 app.use('/api/chatapp', auth);
 
 http.listen(3000, () => {
