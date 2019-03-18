@@ -14,14 +14,14 @@ module.exports = {
 
     if (!token) {
       return res
-        .status(httpStatus.FORBIDDEN)
+        .status(HttpStatus.FORBIDDEN)
         .json({ message: 'No token provided' });
     }
 
-    return jwt.verify(token, dbConfig.secrets, (err, decoded) => {
+    return jwt.verify(token, dbConfig.secret, (err, decoded) => {
       if (err) {
         if (err.expiredAt < new Date()) {
-          return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+          return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
             message: 'Token has expired. Please login again',
             token: null
           });
