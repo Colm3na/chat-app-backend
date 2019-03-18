@@ -1,4 +1,5 @@
-const User = require('../schemas');
+const Models = require('../schemas');
+const User = Models.User;
 const Joi = require('joi');
 const HttpStatus = require('http-status-codes');
 const bcrypt = require('bcrypt');

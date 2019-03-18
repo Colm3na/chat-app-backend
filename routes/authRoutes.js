@@ -1,5 +1,6 @@
 const express = require('express');
-const User = require('../schemas');
+const Models = require('../schemas');
+const User = Models.User;
 const router = express.Router();
 const AuthControl = require('../controllers/auth');
 

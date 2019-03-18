@@ -1,4 +1,5 @@
-const User = require('../schemas');
+const Models = require('../schemas');
+const User = Models.User;
 const HttpStatus = require('http-status-codes');
 
 module.exports = {

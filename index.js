@@ -9,6 +9,7 @@ const io = require('socket.io')(http);
 
 const auth = require('./routes/authRoutes');
 const users = require('./routes/userRoutes');
+const chatmessages = require('./routes/chatmsgRoutes');
 
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
@@ -25,6 +26,7 @@ app.use(express.static(__dirname + 'public'))
 
 app.use('/api/chatapp', users);
 app.use('/api/chatapp', auth);
+app.use('/api/chatapp', chatmessages);
 
 http.listen(3000, () => {
     console.log('Server listening on port 3000');
