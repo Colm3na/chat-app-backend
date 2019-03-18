@@ -25,8 +25,21 @@ module.exports = {
             } else {
                 res
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .json({message: 'Error occured'})
+                    .json({ message: 'Error occured', error: err })
             }
         })
+    },
+
+    async deleteAllMessages(req, res) {
+        try {
+        await Message.deleteMany();
+            res
+                .status(HttpStatus.OK)
+                .json({ message: 'All messages have been successfully deleted' })
+        } catch (err) {
+            res
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .json({ message: 'Error occured', error: err })
+        }
     }
 }
