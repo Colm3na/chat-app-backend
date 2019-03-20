@@ -106,6 +106,7 @@ module.exports = {
 
                                 if ( correct === true ) {
                                     user.password = userFound.password;
+                                    user._id = userFound._id;
                                     const token = jwt.sign({data: user}, dbConfig.secret, {
                                         expiresIn: '5h'
                                     });
@@ -147,6 +148,7 @@ module.exports = {
 
                                 if ( correct === true ) {
                                     user.password = userFound.password;
+                                    user._id = userFound._id;
                                     const token = jwt.sign({data: user}, dbConfig.secret, {
                                         expiresIn: '5h'
                                     });
