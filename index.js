@@ -6,6 +6,7 @@ const app = express();
 
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
+const _ = require('lodash');
 
 const auth = require('./routes/authRoutes');
 const users = require('./routes/userRoutes');
@@ -15,7 +16,7 @@ app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 app.use(cookieParser(cookieSecret));
 
-require('./socket/streams')(io);
+require('./socket/streams')(io, _);
 
 app.use(function(req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
