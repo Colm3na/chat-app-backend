@@ -21,5 +21,9 @@ module.exports = function(io) {
 
             io.emit('usersOnline', uniqueList);
         });
+
+        socket.on('disconnect', () => {
+            console.log('disconnect fired');
+        })
     })
 }
