@@ -1,30 +1,37 @@
-module.exports = function(io) {
-    let globalArray = [];
+module.exports = function(io, _) {
+    var userArray = [];
+    
     io.on('connection', (socket) => {
         console.log('User connected');
 
-        socket
+        socket            
             .on('new message', (data) => {
                 console.log(data);
             })
 
             .on('online', data => {
-                console.log(data)
-                socket.join(data.room);
-                const user = { id: socket.id, name: data.user, room: data.room, _id: data.userId };
-                globalArray.push(user);
-                const roomName = globalArray.filter(user => user.room === data.room);
-                const list = roomName.map( function(user) { return [user.name, user._id] });
-                // remove duplicates
-                const uniqueList = list.map(JSON.stringify).reverse().filter(function (e, i, a) {
-                    return a.indexOf(e, i+1) === -1;
-                }).reverse().map(JSON.parse) 
+                console.log('--------->userArray in online event', userArray);
 
-                io.emit('usersOnline', uniqueList);
+                const user = { name: data.user, id: data.userId };
+                userArray.push(user);
+                console.log('--------->userArray after push', userArray);
+                // remove duplicates
+                userArray = _.uniqBy( userArray, 'id' );
+                console.log('--------->userArray after uniq', userArray);
+
+                io.emit('usersOnline', userArray);
             })
 
             .on('disconnect', () => {
                 console.log('disconnect fired');
+                console.log('/////////////////////////////////////////////////////////////FIRST', userArray.length);
+                let id = socket._id;
+                userArray = userArray.filter(socket => socket.id !== id);
+                
+                console.log('/////////////////////////////////////////////////////////////SECOND', userArray.length);
+                console.log(socket._id, 'has been disconnected');
+
+                io.emit('usersOnline', userArray);
             })
     })
 }

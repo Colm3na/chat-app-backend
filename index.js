@@ -41,7 +41,7 @@ io.use((socket, next) => {
   });
 });
 
-require('./socket/streams')(io);
+require('./socket/streams')(io, _);
 
 http.listen(3000, () => {
     console.log('Server listening on port 3000');
