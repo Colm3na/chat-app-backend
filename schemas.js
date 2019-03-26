@@ -21,7 +21,7 @@ const MessageSchema = new Schema ({
     sender: String,
     receiver: String,
     isRead: { type: Boolean, default: false },
-    createdAt: { type: Date, default: Date.now() }
+    createdAt: { type: Date, default: Date.now }
 })
 
 const Message = mongoose.model('Message', MessageSchema);
