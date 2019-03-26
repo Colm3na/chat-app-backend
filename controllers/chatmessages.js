@@ -6,7 +6,7 @@ const Joi = require('joi');
 const MessageValidator = Joi.object().keys({
     body: Joi.string().required(),
     senderId: Joi.any().required(),
-    receiverId: Joi.any(),
+    receiverId: Joi.any().required(),
     sender: Joi.string().required(),
     receiver: Joi.string(),
     isRead: Joi.bool(),
@@ -41,6 +41,20 @@ module.exports = {
                 res
                     .status(HttpStatus.OK)
                     .json({ message: 'Chat message', msg: messageFound.body })
+            } else {
+                res
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .json({ message: 'Error occured', error: err })
+            }
+        })
+    },
+
+    async getAllMessages(req, res) {
+        await Message.find({ senderId: req.params.senderId, receiverId: req.params.receiverId }, ( err, messages ) => {
+            if(!err) {
+                res
+                    .status(HttpStatus.OK)
+                    .json({ message: 'All messages for this conversation', msg: messages })
             } else {
                 res
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)

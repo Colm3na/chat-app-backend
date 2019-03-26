@@ -5,6 +5,7 @@ const AuthHelper = require('../helpers/authHelper');
 
 router.post('/chat-messages', AuthHelper.verifyToken, MsgControl.saveMessage);
 router.post('/chat-messages/:senderId/:receiverId', AuthHelper.verifyToken, MsgControl.saveMessage);
+router.get('/chat-messages/:senderId/:receiverId', AuthHelper.verifyToken, MsgControl.getAllMessages);
 router.get('/chat-messages/:id', AuthHelper.verifyToken, MsgControl.getMessage);
 router.delete('/chat-messages', MsgControl.deleteAllMessages);
 
