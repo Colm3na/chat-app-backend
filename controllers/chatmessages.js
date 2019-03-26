@@ -54,7 +54,7 @@ module.exports = {
             if(!err) {
                 res
                     .status(HttpStatus.OK)
-                    .json({ message: 'All messages for this conversation', msg: messages })
+                    .json([ messages ])
             } else {
                 res
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
