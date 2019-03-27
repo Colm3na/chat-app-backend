@@ -17,12 +17,27 @@ module.exports = function(io, _) {
     var userArray = [];
     
     io.on('connection', (socket) => {
-        console.log('User connected');
+        console.log('User connected', socket.id);
            
         socket
             .on('new message', data => {
                 console.log(data);
                 io.emit('receive message', data);
+            })
+
+            .on('typing', data => {
+                let timer = 5;        
+                console.log('--------->>' + data.sender, 'is typing');
+                    
+                if ( data.val === true ) {
+                    socket.broadcast.emit('receive typing', {sender: data.sender, val: true});
+                } else {
+                  if ( timer <= 0 ) {
+                    socket.broadcast.emit('receive typing', {val: false});
+                  } else {
+                    setTimeout(() => {timer = 0; socket.broadcast.emit('receive typing', {val: false})}, 1500);
+                  }
+                }
             })
 
             .on('online', data => {
