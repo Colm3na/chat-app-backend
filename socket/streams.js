@@ -1,12 +1,28 @@
+const jwt = require('jsonwebtoken');
+const dbConfig = require('../config/secrets');
+
 module.exports = function(io, _) {
+    io.use((socket, next) => {
+        const token = socket.handshake.query.token;
+        
+        // verify token
+        jwt.verify(token, dbConfig.secret, (err, decoded) => {
+            if(err) return next(err);
+            // set the user’s mongodb _id to the socket for future use
+            socket._id = decoded.data._id;
+            next();
+        });
+    });
+    
     var userArray = [];
     
     io.on('connection', (socket) => {
         console.log('User connected');
-
-        socket            
-            .on('new message', (data) => {
+           
+        socket
+            .on('new message', data => {
                 console.log(data);
+                io.emit('receive message', data);
             })
 
             .on('online', data => {
@@ -23,11 +39,9 @@ module.exports = function(io, _) {
             })
 
             .on('disconnect', () => {
-                console.log('disconnect fired');
                 console.log('/////////////////////////////////////////////////////////////FIRST', userArray.length);
                 let id = socket._id;
                 userArray = userArray.filter(socket => socket.id !== id);
-                
                 console.log('/////////////////////////////////////////////////////////////SECOND', userArray.length);
                 console.log(socket._id, 'has been disconnected');
 
