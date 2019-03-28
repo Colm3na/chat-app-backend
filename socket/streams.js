@@ -9,7 +9,8 @@ module.exports = function(io, _) {
         jwt.verify(token, dbConfig.secret, (err, decoded) => {
             if(err) return next(err);
             // set the user’s mongodb _id to the socket for future use
-            socket._id = decoded.data._id;
+            socket.id = decoded.data._id;
+            socket.name = decoded.data.username;
             next();
         });
     });
@@ -17,7 +18,7 @@ module.exports = function(io, _) {
     var userArray = [];
     
     io.on('connection', (socket) => {
-        console.log('User connected', socket.id);
+        console.log('User connected', socket.name, socket.id);
            
         socket
             .on('new message', data => {
@@ -27,15 +28,14 @@ module.exports = function(io, _) {
 
             .on('typing', data => {
                 let timer = 5;        
-                console.log('--------->>' + data.sender, 'is typing');
-                    
+                console.log(socket.name, 'in typing', socket.id, 'to', data.receiverId);    
                 if ( data.val === true ) {
-                    socket.broadcast.emit('receive typing', {sender: data.sender, val: true});
+                    io.to(data.receiverId).emit('receive typing', {sender: data.sender, val: true});
                 } else {
                   if ( timer <= 0 ) {
-                    socket.broadcast.emit('receive typing', {val: false});
+                    io.to(data.receiverId).emit('receive typing', {val: false});
                   } else {
-                    setTimeout(() => {timer = 0; socket.broadcast.emit('receive typing', {val: false})}, 1500);
+                    setTimeout(() => {timer = 0; io.to(data.receiverId).emit('receive typing', {sender: data.sender, val: false})}, 1500);
                   }
                 }
             })
@@ -58,7 +58,7 @@ module.exports = function(io, _) {
                 let id = socket._id;
                 userArray = userArray.filter(socket => socket.id !== id);
                 console.log('/////////////////////////////////////////////////////////////SECOND', userArray.length);
-                console.log(socket._id, 'has been disconnected');
+                console.log(socket.id, 'has been disconnected');
 
                 io.emit('usersOnline', userArray);
             })
