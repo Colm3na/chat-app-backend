@@ -23,7 +23,8 @@ module.exports = function(io, _) {
         socket
             .on('new message', data => {
                 console.log(data);
-                io.emit('receive message', data);
+                io.to(data.receiverId).emit('receive message', data);
+                io.to(data.senderId).emit('receive message', data);
             })
 
             .on('typing', data => {
