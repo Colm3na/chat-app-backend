@@ -2,6 +2,9 @@ const jwt = require('jsonwebtoken');
 const dbConfig = require('../config/secrets');
 
 module.exports = function(io, _) {
+
+    var userArray = [];
+
     io.use((socket, next) => {
         const token = socket.handshake.query.token;
         
@@ -15,11 +18,15 @@ module.exports = function(io, _) {
         });
     });
     
-    var userArray = [];
-    
-    io.on('connection', (socket) => {
+    io.on('connection', socket => {
         console.log('User connected', socket.name, socket.id);
-           
+        socket.join(socket.name);
+        io.of('/').in(socket.name).clients(function(error, clients){
+            console.log(clients);
+            var numClients = clients.length;
+            console.log(`There are ${numClients} users in ${socket.name} room`);
+        });
+
         socket
             .on('new message', data => {
                 console.log(data);
@@ -29,7 +36,6 @@ module.exports = function(io, _) {
 
             .on('typing', data => {
                 let timer = 5;        
-                console.log(socket.name, 'in typing', socket.id, 'to', data.receiverId);    
                 if ( data.val === true ) {
                     io.to(data.receiverId).emit('receive typing', {sender: data.sender, val: true});
                 } else {
