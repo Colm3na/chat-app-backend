@@ -29,20 +29,18 @@ module.exports = function(io, _) {
 
         socket
             .on('new message', data => {
-                console.log(data);
-                io.to(data.receiverId).emit('receive message', data);
-                io.to(data.senderId).emit('receive message', data);
+                io.to(data.receiver).emit('receive message', data);
             })
 
             .on('typing', data => {
                 let timer = 5;        
                 if ( data.val === true ) {
-                    io.to(data.receiverId).emit('receive typing', {sender: data.sender, val: true});
+                    socket.broadcast.to(data.receiver).emit('receive typing', {sender: data.sender, val: true});
                 } else {
                   if ( timer <= 0 ) {
-                    io.to(data.receiverId).emit('receive typing', {val: false});
+                    socket.broadcast.to(data.receiver).emit('receive typing', {val: false});
                   } else {
-                    setTimeout(() => {timer = 0; io.to(data.receiverId).emit('receive typing', {sender: data.sender, val: false})}, 1500);
+                    setTimeout(() => {timer = 0; socket.broadcast.to(data.receiver).emit('receive typing', {sender: data.sender, val: false})}, 1500);
                   }
                 }
             })
@@ -58,6 +56,16 @@ module.exports = function(io, _) {
                 console.log('--------->userArray after uniq', userArray);
 
                 io.emit('usersOnline', userArray);
+            })
+
+            .on('enter chat', data => {
+                console.log('enter chat event. Room', data);
+                socket.join(data);
+                io.of('/').in(data).clients(function(error, clients){
+                    console.log(clients);
+                    var numClients = clients.length;
+                    console.log(`There are ${numClients} users in ${data} room`);
+                });
             })
 
             .on('disconnect', () => {
