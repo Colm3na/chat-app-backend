@@ -4,7 +4,7 @@ const MsgControl = require('../controllers/chatmessages');
 const AuthHelper = require('../helpers/authHelper');
 
 router.post('/chat-messages', AuthHelper.verifyToken, MsgControl.saveMessage);
-router.get('/chat-messages/:senderId/unread', AuthHelper.verifyToken, MsgControl.get_user_number_unread_messages);
+router.get('/chat-messages/:receiverId/unread', AuthHelper.verifyToken, MsgControl.get_user_number_unread_messages);
 router.post('/chat-messages/:senderId/:receiverId', AuthHelper.verifyToken, MsgControl.saveMessage);
 router.get('/chat-messages/:senderId/:receiverId', AuthHelper.verifyToken, MsgControl.getAllMessages);
 router.get('/chat-messages/:senderId', AuthHelper.verifyToken, MsgControl.getUserMessages);

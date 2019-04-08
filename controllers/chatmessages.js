@@ -21,10 +21,18 @@ module.exports = {
             if (!err) {
                 let promise = Message.create(message);
                 promise.then( (message) => {
-                    // save message id in user model                    
+                    // save message id in sender user model                    
                     User.findById(message.senderId, (err, userFound) => {
                         if (!err) {
-                            userFound.messages.push(message._id);
+                            userFound.messages.sent.push(message._id);
+                            userFound.save();
+                            console.log('**** update user', userFound.username);
+                        }
+                    });
+                    // save message id in receiver user model                    
+                    User.findById(message.receiverId, (err, userFound) => {
+                        if (!err) {
+                            userFound.messages.received.push(message._id);
                             userFound.save();
                             console.log('**** update user', userFound.username);
                         }
@@ -48,11 +56,12 @@ module.exports = {
 
     async getUserMessages(req, res) {
         await User.findById({ _id: req.params.senderId })
-        .populate('messages')
+        .populate('messages.sent')
+        .populate('messages.received')
         .then( user => {
             res
                 .status(HttpStatus.OK)
-                .json({messages: user.messages});    
+                .json({messages: user.messages});
         })
         .catch( err => {
             res
@@ -62,13 +71,12 @@ module.exports = {
     },
 
     async get_user_number_unread_messages(req, res) {
-        console.log('inside get_ user-unread-msg')
-        await User.findById({ _id: req.params.senderId })
-        .populate({path: 'messages', match: { isRead: false }})
+        await User.findById({ _id: req.params.receiverId })
+        .populate({path: 'messages.received', match: { isRead: false }})
         .then( user => {
             res
                 .status(HttpStatus.OK)
-                .json({messages: user.messages.length});    
+                .json({messages: user.messages.received.length});    
         })
         .catch( err => {
             res
