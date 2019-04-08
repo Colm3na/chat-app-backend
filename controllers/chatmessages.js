@@ -1,5 +1,6 @@
 const Models = require('../schemas');
 const Message = Models.Message;
+const User = Models.User;
 const HttpStatus = require('http-status-codes');
 const Joi = require('joi');
 
@@ -18,7 +19,17 @@ module.exports = {
         let message = req.body;
         await Joi.validate(message, MessageValidator, (err) => {
             if (!err) {
-                Message.create(message)
+                let promise = Message.create(message);
+                promise.then( (message) => {
+                    // save message id in user model                    
+                    User.findById(message.senderId, (err, userFound) => {
+                        if (!err) {
+                            userFound.messages.push(message._id);
+                            userFound.save();
+                            console.log('**** update user', userFound.username);
+                        }
+                    })
+                })
                 .then( () => {
                     res
                         .status(HttpStatus.CREATED)
@@ -33,6 +44,37 @@ module.exports = {
                     .json({ message: err.details });
             }
         }) 
+    },
+
+    async getUserMessages(req, res) {
+        await User.findById({ _id: req.params.senderId })
+        .populate('messages')
+        .then( user => {
+            res
+                .status(HttpStatus.OK)
+                .json({messages: user.messages});    
+        })
+        .catch( err => {
+            res
+                .status(HttpStatus.BAD_REQUEST)
+                .json({ message: err.details });
+        })
+    },
+
+    async get_user_number_unread_messages(req, res) {
+        console.log('inside get_ user-unread-msg')
+        await User.findById({ _id: req.params.senderId })
+        .populate({path: 'messages', match: { isRead: false }})
+        .then( user => {
+            res
+                .status(HttpStatus.OK)
+                .json({messages: user.messages.length});    
+        })
+        .catch( err => {
+            res
+                .status(HttpStatus.BAD_REQUEST)
+                .json({ message: err.details });
+        })
     },
 
     async getMessage(req, res) {
