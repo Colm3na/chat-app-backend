@@ -17,6 +17,7 @@ const MessageValidator = Joi.object().keys({
 module.exports = {
     async saveMessage(req, res) {
         let message = req.body;
+
         await Joi.validate(message, MessageValidator, (err) => {
             if (!err) {
                 let promise = Message.create(message);
@@ -26,7 +27,6 @@ module.exports = {
                         if (!err) {
                             userFound.messages.sent.push(message._id);
                             userFound.save();
-                            console.log('**** update user', userFound.username);
                         }
                     });
                     // save message id in receiver user model                    
@@ -34,14 +34,12 @@ module.exports = {
                         if (!err) {
                             userFound.messages.received.push(message._id);
                             userFound.save();
-                            console.log('**** update user', userFound.username);
                         }
-                    })
-                })
-                .then( () => {
+                    });
+
                     res
                         .status(HttpStatus.CREATED)
-                        .json({message: 'Chat message succesfully saved', message})
+                        .json({msg: 'Chat message succesfully saved', id: message._id, message});
                 })
                 .catch( err => {
                     console.error(err);
@@ -93,15 +91,16 @@ module.exports = {
                     messageFound.save();
                     res
                         .status(HttpStatus.OK)
-                        .json({ message: 'message successfully set as read', msg: messageFound.isRead })
+                        .json({ message: 'message successfully set as read', msg: messageFound.isRead });
                 } else {
                     res
-                        .json({ message: 'message has already been read' })
+                        .status(HttpStatus.CONFLICT)
+                        .json({ message: 'message has already been read' });
                 }
             } else {
                 res
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .json({ message: 'Error occured', error: err.details })
+                    .json({ message: 'Error occured', error: err.details });
             }
         })
     },
@@ -111,11 +110,11 @@ module.exports = {
             if (!err) {
                 res
                     .status(HttpStatus.OK)
-                    .json({ message: 'Chat message', msg: messageFound.body })
+                    .json({ message: 'Chat message', msg: messageFound.body });
             } else {
                 res
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .json({ message: 'Error occured', error: err.details })
+                    .json({ message: 'Error occured', error: err.details });
             }
         })
     },
@@ -125,11 +124,11 @@ module.exports = {
             if(!err) {
                 res
                     .status(HttpStatus.OK)
-                    .json([ messages ])
+                    .json([ messages ]);
             } else {
                 res
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .json({ message: 'Error occured', error: err.details })
+                    .json({ message: 'Error occured', error: err.details });
             }
         })
     },
@@ -139,11 +138,11 @@ module.exports = {
         await Message.deleteMany();
             res
                 .status(HttpStatus.OK)
-                .json({ message: 'All messages have been successfully deleted' })
+                .json({ message: 'All messages have been successfully deleted' });
         } catch (err) {
             res
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .json({ message: 'Error occured', error: err.details })
+                .json({ message: 'Error occured', error: err.details });
         }
     }
 }
