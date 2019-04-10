@@ -70,11 +70,11 @@ module.exports = {
 
     async get_user_number_unread_messages(req, res) {
         await User.findById( req.params.senderId )
-        .populate({path: 'messages.received', match: { isRead: false }})
+        .populate({ path: 'messages.received', match: { isRead: false }, select: 'sender -_id' })
         .then( user => {
             res
                 .status(HttpStatus.OK)
-                .json({messages: user.messages.received.length});    
+                .json({messages: user.messages.received});    
         })
         .catch( err => {
             res

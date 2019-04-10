@@ -30,7 +30,7 @@ module.exports = function(io, _) {
         socket
             .on('new message', data => {
                 io.to(data.receiver).emit('receive message', data);
-                socket.broadcast.to(data.receiver).emit('read message', data.id);
+                socket.broadcast.to(data.receiver).emit('read message', { id: data.id, sender: data.sender });
             })
 
             .on('typing', data => {
