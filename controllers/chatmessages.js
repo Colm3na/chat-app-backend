@@ -91,12 +91,32 @@ module.exports = {
                     messageFound.save();
                     res
                         .status(HttpStatus.OK)
-                        .json({ message: 'message successfully set as read', msg: messageFound.isRead });
+                        .json({ message: 'Message successfully set as read', msg: messageFound.isRead });
                 } else {
                     res
                         .status(HttpStatus.CONFLICT)
-                        .json({ message: 'message has already been read' });
+                        .json({ message: 'Message has already been read' });
                 }
+            } else {
+                res
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .json({ message: 'Error occured', error: err.details });
+            }
+        })
+    },
+
+    async set_all_messages_as_read(req, res) {
+        await Message.find( { receiverId: req.params.receiverId, senderId: req.params.senderId }, (err, messagesFound) => {
+            if (!err) {
+                messagesFound.forEach( messageFound => {
+                    if ( messageFound.isRead === false ) {
+                        messageFound.isRead = true;
+                        messageFound.save();
+                    }
+                })
+                res
+                    .status(HttpStatus.OK)
+                    .json({msg: 'All messages successfully set to read', messages: messagesFound});
             } else {
                 res
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
