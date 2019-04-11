@@ -67,6 +67,7 @@ module.exports = function(io, _) {
                     var numClients = clients.length;
                     console.log(`There are ${numClients} users in ${data} room`);
                 });
+                io.emit('entered chat');
             })
 
             .on('disconnect', () => {
