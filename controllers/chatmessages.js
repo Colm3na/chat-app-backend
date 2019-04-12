@@ -145,9 +145,14 @@ module.exports = {
     async deleteAllMessages(req, res, next) {
         try {
             await Message.deleteMany();
-                res
-                    .status(HttpStatus.OK)
-                    .json({ message: 'All messages have been successfully deleted' });
+            // delete also messages records in users' documents in DB
+            await User.updateMany({}, {'$set': { messages: {sent: [], received: []}}}, (err, updatedUsers) => {
+                if (!err) {
+                    res.send({ message: 'All messages have been successfully deleted', updatedUsers });
+                } else {
+                    return next(err);
+                }
+            })
         } catch (err) {
             return next(err);
         }
