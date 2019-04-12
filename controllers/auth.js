@@ -23,7 +23,7 @@ const UserLoginEmailValidator = Joi.object().keys({
 })
 
 module.exports = {
-    createUser(req, res) {
+    createUser(req, res, next) {
         let user = req.body;
         console.log(user);
         Joi.validate( user, UserValidator, (err) => {
@@ -76,12 +76,12 @@ module.exports = {
                     }
                 })
             } else {
-                return res.status(HttpStatus.BAD_REQUEST).json({ message: err.details });
+                return next(err.details);
             }
         })
     },
 
-    validateUser(req, res) {
+    validateUser(req, res, next) {
         let user = req.body;
         console.log(user);
         if (user.username) {
@@ -123,7 +123,7 @@ module.exports = {
                         }
                     })
                 } else {
-                    return res.status(HttpStatus.BAD_REQUEST).json({ message: err.details });
+                    return next(err.details);
                 }
             })
         } else {
@@ -165,7 +165,7 @@ module.exports = {
                         }
                     })
                 } else {
-                    return res.status(HttpStatus.BAD_REQUEST).json({ message: err.details });
+                    return next(err.details);
                 }
             })
         }

@@ -16,7 +16,7 @@ app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 app.use(cookieParser(cookieSecret));
 
-app.use(function(req, res, next) {
+app.use((req, res, next) => {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
     next();
@@ -26,6 +26,16 @@ app.use(express.static(__dirname + 'public'))
 app.use('/api/chatapp', users);
 app.use('/api/chatapp', auth);
 app.use('/api/chatapp', chatmessages);
+
+// Not found
+app.use((req, res, next) => {
+  res.status(404).send({ msg: 'Url not found' });
+})
+
+// Error
+app.use((err, req, res, next) => {
+  res.status(500).send({ msg: 'Error occured', trace: err });
+})
 
 require('./socket/streams')(io, _);
 

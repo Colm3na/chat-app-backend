@@ -15,9 +15,9 @@ const MessageValidator = Joi.object().keys({
 })
 
 module.exports = {
-    async saveMessage(req, res) {
+    async saveMessage(req, res, next) {
         let message = req.body;
-
+        
         await Joi.validate(message, MessageValidator, (err) => {
             if (!err) {
                 let promise = Message.create(message);
@@ -42,48 +42,45 @@ module.exports = {
                         .json({msg: 'Chat message succesfully saved', id: message._id, message});
                 })
                 .catch( err => {
-                    console.error(err);
+                    return next(err);
                 })
             } else {
-                return res
-                    .status(HttpStatus.BAD_REQUEST)
-                    .json({ message: 'Error occured', err: err.details });
+                return next(err.details);
             }
         }) 
     },
 
-    async getUserMessages(req, res) {
-        await User.findById( req.params.senderId )
-        .populate('messages.sent')
-        .populate('messages.received')
-        .then( user => {
-            res
-                .status(HttpStatus.OK)
-                .json({messages: user.messages});
-        })
-        .catch( err => {
-            res
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .json({ message: 'Error occured', error: err.details });
-        })
+    async getUserMessages(req, res, next) {
+        try {
+            await User.findById( req.params.senderId )
+            .populate('messages.sent')
+            .populate('messages.received')
+            .then( user => {
+                res
+                    .status(HttpStatus.OK)
+                    .json({messages: user.messages});
+            })
+        } catch(err) {
+            return next(err);
+        }
+        
     },
 
-    async get_user_number_unread_messages(req, res) {
-        await User.findById( req.params.senderId )
-        .populate({ path: 'messages.received', match: { isRead: false }, select: 'sender -_id' })
-        .then( user => {
-            res
-                .status(HttpStatus.OK)
-                .json({messages: user.messages.received});    
-        })
-        .catch( err => {
-            res
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .json({ message: 'Error occured', error: err.details });
-        })
+    async get_user_number_unread_messages(req, res, next) {
+        try {
+            await User.findById( req.params.senderId )
+            .populate({ path: 'messages.received', match: { isRead: false }, select: 'sender -_id' })
+            .then( user => {
+                res
+                    .status(HttpStatus.OK)
+                    .json({messages: user.messages.received});    
+            })
+        } catch(err) {
+            return next(err);
+        }
     },
 
-    async set_message_as_read(req, res) {
+    async set_message_as_read(req, res, next) {
         await Message.findById( req.params.messageId, (err, messageFound) => {
             if (!err) {
                 if ( messageFound.isRead === false ) {
@@ -98,14 +95,12 @@ module.exports = {
                         .json({ message: 'Message has already been read' });
                 }
             } else {
-                res
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .json({ message: 'Error occured', error: err.details });
+                return next(err);
             }
         })
     },
 
-    async set_all_messages_as_read(req, res) {
+    async set_all_messages_as_read(req, res, next) {
         await Message.find( { receiverId: req.params.receiverId, senderId: req.params.senderId }, (err, messagesFound) => {
             if (!err) {
                 messagesFound.forEach( messageFound => {
@@ -118,51 +113,43 @@ module.exports = {
                     .status(HttpStatus.OK)
                     .json({msg: 'All messages successfully set to read', messages: messagesFound});
             } else {
-                res
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .json({ message: 'Error occured', error: err.details });
+                return next(err);
             }
         })
     },
 
-    async getMessage(req, res) {
+    async getMessage(req, res, next) {
         await Message.findById( req.params.id, ( err, messageFound ) => {
             if (!err) {
                 res
                     .status(HttpStatus.OK)
                     .json({ message: 'Chat message', msg: messageFound.body });
             } else {
-                res
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .json({ message: 'Error occured', error: err.details });
+               return next(err);
             }
         })
     },
 
-    async getAllMessages(req, res) {
+    async getAllMessages(req, res, next) {
         await Message.find({ senderId: req.params.senderId, receiverId: req.params.receiverId }, ( err, messages ) => {
             if(!err) {
                 res
                     .status(HttpStatus.OK)
                     .json([ messages ]);
             } else {
-                res
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .json({ message: 'Error occured', error: err.details });
+                return next(err);
             }
         })
     },
 
-    async deleteAllMessages(req, res) {
+    async deleteAllMessages(req, res, next) {
         try {
-        await Message.deleteMany();
-            res
-                .status(HttpStatus.OK)
-                .json({ message: 'All messages have been successfully deleted' });
+            await Message.deleteMany();
+                res
+                    .status(HttpStatus.OK)
+                    .json({ message: 'All messages have been successfully deleted' });
         } catch (err) {
-            res
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .json({ message: 'Error occured', error: err.details });
+            return next(err);
         }
     }
 }
